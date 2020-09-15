@@ -25,15 +25,9 @@ class ResNet(nn.Module):
         self.relu = nn.ReLU(inplace=True)
 
         self.layer1 = self._make_layer(block, 64, layers[0])
-        self.layer2 = self._make_layer(
-            block, 128, layers[1], stride=2
-        )
-        self.layer3 = self._make_layer(
-            block, 256, layers[2], stride=2
-        )
-        self.layer4 = self._make_layer(
-            block, 512, layers[3], stride=2
-        )
+        self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
+        self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
+        self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
 
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
@@ -78,9 +72,7 @@ class ResNet(nn.Module):
         )
         self.inplanes = planes * block.expansion
         for i in range(1, blocks):
-            layers.append(
-                block(self.inplanes, planes)
-            )
+            layers.append(block(self.inplanes, planes))
 
         return nn.Sequential(*layers)
 

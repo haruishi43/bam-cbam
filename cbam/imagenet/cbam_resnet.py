@@ -14,11 +14,7 @@ class CBAMResNet(ResNet):
         layers: List[int],
         num_classes: int,
     ) -> None:
-        super().__init__(
-            block=block,
-            layers=layers,
-            num_classes=num_classes
-        )
+        super().__init__(block=block, layers=layers, num_classes=num_classes)
 
     def _make_layer(self, block, planes, blocks, stride=1):
         downsample = None
@@ -46,8 +42,6 @@ class CBAMResNet(ResNet):
         )
         self.inplanes = planes * block.expansion
         for i in range(1, blocks):
-            layers.append(
-                block(self.inplanes, planes, use_cbam=True)
-            )
+            layers.append(block(self.inplanes, planes, use_cbam=True))
 
         return nn.Sequential(*layers)

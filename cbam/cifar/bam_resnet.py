@@ -18,11 +18,7 @@ class BAMResNet(ResNet):
         self.bam1 = BAM(64 * block.expansion)
         self.bam2 = BAM(128 * block.expansion)
         self.bam3 = BAM(256 * block.expansion)
-        super().__init__(
-            block=block,
-            layers=layers,
-            num_classes=num_classes
-        )
+        super().__init__(block=block, layers=layers, num_classes=num_classes)
 
     def get_features(self, x):
         x = self.conv1(x)
