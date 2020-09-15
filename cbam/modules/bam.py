@@ -3,15 +3,37 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
+from .utils import Flatten
 
-class Flatten(nn.Module):
-    def forward(self, x):
-        return x.view(x.size(0), -1)
+__all__ = ["BAM"]
+
+
+class BAM(nn.Module):
+    def __init__(self, gate_channel: int):
+        r"""BAM Layer
+
+        params:
+        - gate_channel: int
+        """
+        super().__init__()
+        self.channel_att = ChannelGate(gate_channel)
+        self.spatial_att = SpatialGate(gate_channel)
+
+    def forward(self, in_tensor):
+        att = 1 + F.sigmoid(
+            self.channel_att(in_tensor) * self.spatial_att(in_tensor)
+        )
+        return att * in_tensor
 
 
 class ChannelGate(nn.Module):
-    def __init__(self, gate_channel, reduction_ratio=16, num_layers=1):
-        super(ChannelGate, self).__init__()
+    def __init__(
+        self,
+        gate_channel: int,
+        reduction_ratio: int = 16,
+        num_layers: int = 1,
+    ) -> None:
+        super().__init__()
         self.gate_c = nn.Sequential()
         self.gate_c.add_module("flatten", Flatten())
         gate_channels = [gate_channel]
@@ -45,12 +67,12 @@ class ChannelGate(nn.Module):
 class SpatialGate(nn.Module):
     def __init__(
         self,
-        gate_channel,
-        reduction_ratio=16,
-        dilation_conv_num=2,
-        dilation_val=4,
-    ):
-        super(SpatialGate, self).__init__()
+        gate_channel: int,
+        reduction_ratio: int = 16,
+        dilation_conv_num: int = 2,
+        dilation_val: int = 4,
+    ) -> None:
+        super().__init__()
         self.gate_s = nn.Sequential()
         self.gate_s.add_module(
             "gate_s_conv_reduce0",
@@ -86,16 +108,3 @@ class SpatialGate(nn.Module):
 
     def forward(self, in_tensor):
         return self.gate_s(in_tensor).expand_as(in_tensor)
-
-
-class BAM(nn.Module):
-    def __init__(self, gate_channel):
-        super(BAM, self).__init__()
-        self.channel_att = ChannelGate(gate_channel)
-        self.spatial_att = SpatialGate(gate_channel)
-
-    def forward(self, in_tensor):
-        att = 1 + F.sigmoid(
-            self.channel_att(in_tensor) * self.spatial_att(in_tensor)
-        )
-        return att * in_tensor

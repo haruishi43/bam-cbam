@@ -1,25 +1,62 @@
 #!/usr/bin/env python3
 
+from typing import List
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+from .utils import Flatten, logsumexp_2d
+
+__all__ = ["CBAM"]
+
+
+class CBAM(nn.Module):
+    def __init__(
+        self,
+        gate_channels: int,
+        reduction_ratio: int = 16,
+        pool_types: List[str] = ["avg", "max"],
+        use_spatial: bool = True,
+    ) -> None:
+        r"""CBAM Layer
+
+        params:
+        - gate_channels: int
+        - reduction_ratio: int (default: 16)
+        - pool_types: List[str] (default: ["avg", "max"])
+        - use_spatial: bool (default: True)
+
+        pool_types can be chosen from ("avg", "max", "lp", "lse")
+        """
+        super().__init__()
+        self.channel_gate = ChannelGate(
+            gate_channels, reduction_ratio, pool_types
+        )
+        self.spatial_gate = SpatialGate() if use_spatial else None
+
+    def forward(self, x):
+        x_out = self.channel_gate(x)
+        if self.spatial_gate is not None:
+            x_out = self.spatial_gate(x_out)
+        return x_out
 
 
 class BasicConv(nn.Module):
     def __init__(
         self,
-        in_planes,
-        out_planes,
-        kernel_size,
-        stride=1,
-        padding=0,
-        dilation=1,
-        groups=1,
-        relu=True,
-        bn=True,
-        bias=False,
-    ):
-        super(BasicConv, self).__init__()
+        in_planes: int,
+        out_planes: int,
+        kernel_size: int,
+        stride: int = 1,
+        padding: int = 0,
+        dilation: int = 1,
+        groups: int = 1,
+        relu: bool = True,
+        bn: bool = True,
+        bias: bool = False,
+    ) -> None:
+        super().__init__()
         self.out_channels = out_planes
         self.conv = nn.Conv2d(
             in_planes,
@@ -47,16 +84,11 @@ class BasicConv(nn.Module):
         return x
 
 
-class Flatten(nn.Module):
-    def forward(self, x):
-        return x.view(x.size(0), -1)
-
-
 class ChannelGate(nn.Module):
     def __init__(
         self, gate_channels, reduction_ratio=16, pool_types=["avg", "max"]
     ):
-        super(ChannelGate, self).__init__()
+        super().__init__()
         self.gate_channels = gate_channels
         self.mlp = nn.Sequential(
             Flatten(),
@@ -100,13 +132,6 @@ class ChannelGate(nn.Module):
         return x * scale
 
 
-def logsumexp_2d(tensor):
-    tensor_flatten = tensor.view(tensor.size(0), tensor.size(1), -1)
-    s, _ = torch.max(tensor_flatten, dim=2, keepdim=True)
-    outputs = s + (tensor_flatten - s).exp().sum(dim=2, keepdim=True).log()
-    return outputs
-
-
 class ChannelPool(nn.Module):
     def forward(self, x):
         return torch.cat(
@@ -116,9 +141,8 @@ class ChannelPool(nn.Module):
 
 
 class SpatialGate(nn.Module):
-    def __init__(self):
-        super(SpatialGate, self).__init__()
-        kernel_size = 7
+    def __init__(self, kernel_size: int = 7):
+        super().__init__()
         self.compress = ChannelPool()
         self.spatial = BasicConv(
             2,
@@ -134,26 +158,3 @@ class SpatialGate(nn.Module):
         x_out = self.spatial(x_compress)
         scale = F.sigmoid(x_out)  # broadcasting
         return x * scale
-
-
-class CBAM(nn.Module):
-    def __init__(
-        self,
-        gate_channels,
-        reduction_ratio=16,
-        pool_types=["avg", "max"],
-        no_spatial=False,
-    ):
-        super(CBAM, self).__init__()
-        self.ChannelGate = ChannelGate(
-            gate_channels, reduction_ratio, pool_types
-        )
-        self.no_spatial = no_spatial
-        if not no_spatial:
-            self.SpatialGate = SpatialGate()
-
-    def forward(self, x):
-        x_out = self.ChannelGate(x)
-        if not self.no_spatial:
-            x_out = self.SpatialGate(x_out)
-        return x_out
