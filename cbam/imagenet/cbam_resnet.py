@@ -14,6 +14,7 @@ class CBAMResNet(ResNet):
         layers: List[int],
         num_classes: int,
     ) -> None:
+        r"""CBAM based ResNet"""
         super().__init__(block=block, layers=layers, num_classes=num_classes)
 
     def _make_layer(self, block, planes, blocks, stride=1):
@@ -26,7 +27,6 @@ class CBAMResNet(ResNet):
                     kernel_size=1,
                     stride=stride,
                     bias=False,
-                    use_cbam=True,
                 ),
                 nn.BatchNorm2d(planes * block.expansion),
             )
@@ -38,6 +38,7 @@ class CBAMResNet(ResNet):
                 planes,
                 stride,
                 downsample,
+                use_cbam=True,
             )
         )
         self.inplanes = planes * block.expansion

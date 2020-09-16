@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from typing import Optional
+
 from torch import nn
 
 from .cbam import CBAM
@@ -7,7 +9,7 @@ from .cbam import CBAM
 __all__ = ["BasicBlock", "Bottleneck"]
 
 
-def conv3x3(in_planes, out_planes, stride=1):
+def conv3x3(in_planes: int, out_planes: int, stride: int = 1) -> nn.Module:
     "3x3 convolution with padding"
     return nn.Conv2d(
         in_planes,
@@ -24,11 +26,11 @@ class BasicBlock(nn.Module):
 
     def __init__(
         self,
-        inplanes,
-        planes,
-        stride=1,
-        downsample=None,
-        use_cbam=False,
+        inplanes: int,
+        planes: int,
+        stride: int = 1,
+        downsample: Optional[nn.Module] = None,
+        use_cbam: bool = False,
         **kwargs
     ) -> None:
         super().__init__()
@@ -69,11 +71,11 @@ class Bottleneck(nn.Module):
 
     def __init__(
         self,
-        inplanes,
-        planes,
-        stride=1,
-        downsample=None,
-        use_cbam=False,
+        inplanes: int,
+        planes: int,
+        stride: int = 1,
+        downsample: Optional[nn.Module] = None,
+        use_cbam: bool = False,
         **kwargs
     ) -> None:
         super().__init__()

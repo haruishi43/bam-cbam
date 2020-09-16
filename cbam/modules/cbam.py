@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import List
+from typing import List, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -47,14 +47,15 @@ class BasicConv(nn.Module):
         self,
         in_planes: int,
         out_planes: int,
-        kernel_size: int,
-        stride: int = 1,
-        padding: int = 0,
-        dilation: int = 1,
+        kernel_size: Union[int, Tuple[int]],
+        stride: Union[int, Tuple[int]] = 1,
+        padding: Union[int, Tuple[int]] = 0,
+        dilation: Union[int, Tuple[int]] = 1,
         groups: int = 1,
         relu: bool = True,
         bn: bool = True,
         bias: bool = False,
+        **kwargs
     ) -> None:
         super().__init__()
         self.out_channels = out_planes
@@ -86,8 +87,12 @@ class BasicConv(nn.Module):
 
 class ChannelGate(nn.Module):
     def __init__(
-        self, gate_channels, reduction_ratio=16, pool_types=["avg", "max"]
-    ):
+        self,
+        gate_channels: int,
+        reduction_ratio: int = 16,
+        pool_types: List[str] = ["avg", "max"],
+        **kwargs
+    ) -> None:
         super().__init__()
         self.gate_channels = gate_channels
         self.mlp = nn.Sequential(
@@ -127,26 +132,36 @@ class ChannelGate(nn.Module):
                 channel_att_sum = channel_att_sum + channel_att_raw
 
         scale = (
-            F.sigmoid(channel_att_sum).unsqueeze(2).unsqueeze(3).expand_as(x)
+            torch.sigmoid(channel_att_sum)
+            .unsqueeze(2)
+            .unsqueeze(3)
+            .expand_as(x)
         )
         return x * scale
 
 
 class ChannelPool(nn.Module):
     def forward(self, x):
+        assert x.dim() >= 3
+        # channel is dim == -3
         return torch.cat(
-            (torch.max(x, 1)[0].unsqueeze(1), torch.mean(x, 1).unsqueeze(1)),
-            dim=1,
+            (
+                torch.max(x, -3)[0].unsqueeze(-3),
+                torch.mean(x, -3).unsqueeze(-3),
+            ),
+            dim=-3,
         )
 
 
 class SpatialGate(nn.Module):
-    def __init__(self, kernel_size: int = 7):
+    def __init__(self, kernel_size: Union[int, Tuple[int]] = 7) -> None:
         super().__init__()
         self.compress = ChannelPool()
+        self.in_planes = 2
+        self.out_planes = 1
         self.spatial = BasicConv(
-            2,
-            1,
+            self.in_planes,
+            self.out_planes,
             kernel_size,
             stride=1,
             padding=(kernel_size - 1) // 2,
@@ -156,5 +171,5 @@ class SpatialGate(nn.Module):
     def forward(self, x):
         x_compress = self.compress(x)
         x_out = self.spatial(x_compress)
-        scale = F.sigmoid(x_out)  # broadcasting
+        scale = torch.sigmoid(x_out)  # broadcasting
         return x * scale

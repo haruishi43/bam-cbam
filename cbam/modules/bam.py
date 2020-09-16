@@ -9,7 +9,7 @@ __all__ = ["BAM"]
 
 
 class BAM(nn.Module):
-    def __init__(self, gate_channel: int):
+    def __init__(self, gate_channel: int) -> None:
         r"""BAM Layer
 
         params:
