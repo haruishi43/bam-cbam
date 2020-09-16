@@ -55,7 +55,6 @@ def test_spatial_gate():
 
 def test_channel_gate():
     r"""Channel Gate Test"""
-
     gate_channels = 64
 
     pool_types_combinations = [
