@@ -200,7 +200,7 @@ def main():
     root = args.data
     img_size = 32
     normalize = transforms.Normalize(
-        mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+        mean=[0.414, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010]
     )
 
     dataset_cls = datasets.CIFAR10 if not args.cifar100 else datasets.CIFAR100
