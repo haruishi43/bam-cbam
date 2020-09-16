@@ -5,10 +5,10 @@ from .cbam_resnet import CBAMResNet
 from .resnet import ResNet
 from ..modules.blocks import BasicBlock, Bottleneck
 
-__all__ = ["resnet"]
+__all__ = ["create_resnet"]
 
 
-def resnet(depth, num_classes, att_type=None):
+def create_resnet(depth, num_classes, att_type=None):
     r"""Create a resnet model for CIFAR (10 and 100)"""
     assert depth in [
         18,

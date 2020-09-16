@@ -29,16 +29,19 @@ class ResNet(nn.Module):
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
 
+        self.flatten = Flatten()
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
         self._init_layers()
 
     def _init_layers(self):
-        init.kaiming_normal(self.fc.weight)
+        init.kaiming_normal_(self.fc.weight)
         for key in self.state_dict():
             if key.split(".")[-1] == "weight":
                 if "conv" in key:
-                    init.kaiming_normal(self.state_dict()[key], mode="fan_out")
+                    init.kaiming_normal_(
+                        self.state_dict()[key], mode="fan_out"
+                    )
                 if "bn" in key:
                     if "SpatialGate" in key:
                         self.state_dict()[key][...] = 0
@@ -92,6 +95,6 @@ class ResNet(nn.Module):
             return x
 
         x = F.avg_pool2d(x, 4)
-        x = Flatten(x)
+        x = self.flatten(x)
         x = self.fc(x)
         return x
