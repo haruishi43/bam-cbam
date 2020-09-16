@@ -26,7 +26,6 @@ class CBAMResNet(ResNet):
                     kernel_size=1,
                     stride=stride,
                     bias=False,
-                    use_cbam=True,
                 ),
                 nn.BatchNorm2d(planes * block.expansion),
             )
@@ -38,6 +37,7 @@ class CBAMResNet(ResNet):
                 planes,
                 stride,
                 downsample,
+                use_cbam=True,
             )
         )
         self.inplanes = planes * block.expansion
