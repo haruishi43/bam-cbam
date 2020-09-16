@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-import os
 import random
 
 from PIL import ImageFile
@@ -195,16 +194,17 @@ def main():
 
     # Data loading code
     img_size = 224
-    traindir = os.path.join(args.data, "train")
-    valdir = os.path.join(args.data, "val")
+    root = args.data
+    dataset_cls = datasets.ImageNet
     normalize = transforms.Normalize(
         mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
     )
 
     val_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder(
-            valdir,
-            transforms.Compose(
+        dataset_cls(
+            root=root,
+            split="val",
+            transform=transforms.Compose(
                 [
                     transforms.Resize(256),
                     transforms.CenterCrop(img_size),
@@ -222,9 +222,10 @@ def main():
         validate(val_loader, model, criterion, 0, 1)
         return
 
-    train_dataset = datasets.ImageFolder(
-        traindir,
-        transforms.Compose(
+    train_dataset = dataset_cls(
+        root=root,
+        split="train",
+        transform=transforms.Compose(
             [
                 transforms.RandomResizedCrop(img_size),
                 transforms.RandomHorizontalFlip(),
