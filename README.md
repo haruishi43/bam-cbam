@@ -11,6 +11,14 @@ A fork of [BAM and CBAM](https://github.com/Jongchan/attention-module).
 
 - Python >= 3.6
 - PyTorch >= 1.5
+- [Detectron2](https://github.com/facebookresearch/detectron2) >= 0.21
+
+If you don't have [detectron2](https://github.com/facebookresearch/detectron2), you can either install it yourself, or use:
+```Bash
+git clone --recursive git@github.com:haruishi43/bam-cbam.git
+cd third/detectron2
+pip install .
+```
 
 ## Classification
 
@@ -30,3 +38,5 @@ python classification/train_imagenet.py --data <path/to/dataset/root> --prefix i
 ```
 
 - See other arguments inside the `parse_args()` function @ [`train_imagenetpy`](classification/train_imagenet.py).
+
+## Detection
