@@ -4,7 +4,6 @@ from typing import List
 
 from torch import nn
 import torch.nn.functional as F
-from torch.nn import init
 
 from ..modules.utils import Flatten
 
@@ -35,18 +34,15 @@ class ResNet(nn.Module):
         self._init_layers()
 
     def _init_layers(self):
-        init.kaiming_normal_(self.fc.weight)
+        nn.init.kaiming_normal_(self.fc.weight)
         for key in self.state_dict():
             if key.split(".")[-1] == "weight":
                 if "conv" in key:
-                    init.kaiming_normal_(
+                    nn.init.kaiming_normal_(
                         self.state_dict()[key], mode="fan_out"
                     )
                 if "bn" in key:
-                    if "SpatialGate" in key:
-                        self.state_dict()[key][...] = 0
-                    else:
-                        self.state_dict()[key][...] = 1
+                    self.state_dict()[key][...] = 1
             elif key.split(".")[-1] == "bias":
                 self.state_dict()[key][...] = 0
 
