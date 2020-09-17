@@ -17,7 +17,7 @@ import torchvision.datasets as datasets
 
 from cbam.imagenet import create_resnet
 
-from .utils import (
+from classification.utils import (
     adjust_learning_rate,
     load_checkpoint,
     save_checkpoint,
@@ -30,7 +30,14 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def parse_args():
     parser = argparse.ArgumentParser(description="PyTorch ImageNet Training")
-    parser.add_argument("data", metavar="DIR", help="path to dataset")
+    parser.add_argument("--data", metavar="DIR", help="path to dataset")
+    parser.add_argument(
+        "--prefix",
+        type=str,
+        required=True,
+        metavar="PFX",
+        help="prefix for logging & checkpoint saving",
+    )
     parser.add_argument(
         "--depth",
         default=50,
@@ -119,13 +126,6 @@ def parse_args():
         default=1234,
         metavar="BS",
         help="input batch size for training (default: 64)",
-    )
-    parser.add_argument(
-        "--prefix",
-        type=str,
-        required=True,
-        metavar="PFX",
-        help="prefix for logging & checkpoint saving",
     )
     parser.add_argument(
         "--evaluate",
