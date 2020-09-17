@@ -122,6 +122,5 @@ def build_cbam_resnet_backbone(cfg, input_shape):
         stages.append(blocks)
         if stage_idx in [2, 3, 4]:
             stages.append(bam_block)
-        return ResNet(stem, stages, out_features=out_features).freeze(
-            freeze_at
-        )
+
+    return ResNet(stem, stages, out_features=out_features).freeze(freeze_at)

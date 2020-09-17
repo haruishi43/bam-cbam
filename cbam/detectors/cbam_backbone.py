@@ -69,7 +69,7 @@ class CBAMBasicBlock(CNNBlockBase):
 
         self.cbam = CBAM(out_channels, reduction_ratio=16)
 
-        for layer in [self.conv1, self.conv2, self.shortcut, self.cbam]:
+        for layer in [self.conv1, self.conv2, self.shortcut]:
             if layer is not None:  # shortcut can be None
                 weight_init.c2_msra_fill(layer)
 
@@ -174,7 +174,6 @@ class CBAMBottleneckBlock(CNNBlockBase):
             self.conv2,
             self.conv3,
             self.shortcut,
-            self.cbam,
         ]:
             if layer is not None:  # shortcut can be None
                 weight_init.c2_msra_fill(layer)
@@ -298,6 +297,5 @@ def build_cbam_resnet_backbone(cfg, input_shape):
         out_channels *= 2
         bottleneck_channels *= 2
         stages.append(blocks)
-        return ResNet(stem, stages, out_features=out_features).freeze(
-            freeze_at
-        )
+
+    return ResNet(stem, stages, out_features=out_features).freeze(freeze_at)

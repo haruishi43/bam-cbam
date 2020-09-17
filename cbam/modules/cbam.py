@@ -6,6 +6,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from fvcore.nn import weight_init
+
 from .utils import Flatten, logsumexp_2d
 
 __all__ = ["CBAM"]
@@ -76,6 +78,8 @@ class BasicConv(nn.Module):
         )
         self.relu = nn.ReLU() if relu else None
 
+        weight_init.c2_msra_fill(self.conv)
+
     def forward(self, x):
         x = self.conv(x)
         if self.bn is not None:
@@ -102,6 +106,10 @@ class ChannelGate(nn.Module):
             nn.Linear(gate_channels // reduction_ratio, gate_channels),
         )
         self.pool_types = pool_types
+
+        for m in self.modules():
+            if type(m) == nn.Linear:
+                weight_init.c2_msra_fill(m)
 
     def forward(self, x):
         channel_att_sum = None
