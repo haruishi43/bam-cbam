@@ -9,7 +9,6 @@ from detectron2.modeling.backbone.resnet import (
     BasicBlock,
     BasicStem,
     BottleneckBlock,
-    weight_init,
 )
 
 from ..modules.bam import BAM
@@ -22,18 +21,18 @@ class BAMBlock(CNNBlockBase):
         out_channels,
         *,
         stride=1,
+        **kwargs
     ):
         super().__init__(in_channels, out_channels, stride)
         self.bam = BAM(out_channels)
-        weight_init.c2_msra_fill(self.bam)
 
     def forward(self, x):
         return self.bam(x)
 
 
 @BACKBONE_REGISTRY.register()
-def build_cbam_resnet_backbone(cfg, input_shape):
-    r"""Create a ResNet with CBAM instance from config
+def build_bam_resnet_backbone(cfg, input_shape):
+    r"""Create a ResNet with BAM instance from config
 
     Returns:
         ResNet+CBAM: a :class:`ResNet` instance
@@ -114,8 +113,14 @@ def build_cbam_resnet_backbone(cfg, input_shape):
             stage_kargs["block_class"] = BottleneckBlock
         blocks = ResNet.make_stage(**stage_kargs)
         if stage_idx in [2, 3, 4]:
-            stage_kargs["block_class"] = BAMBlock
-            bam_block = ResNet.make_stage(**stage_kargs)
+            bam_kargs = {
+                "block_class": BAMBlock,
+                "stride_per_block": [1],
+                "in_channels": in_channels,
+                "out_channels": out_channels,
+                "num_blocks": 1,
+            }
+            bam_block = ResNet.make_stage(**bam_kargs)
         in_channels = out_channels
         out_channels *= 2
         bottleneck_channels *= 2

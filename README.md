@@ -12,6 +12,7 @@ A fork of [BAM and CBAM](https://github.com/Jongchan/attention-module).
 - Python >= 3.6
 - PyTorch >= 1.5
 - [Detectron2](https://github.com/facebookresearch/detectron2) >= 0.21
+- fvcore (comes with Detectron2)
 
 If you don't have [detectron2](https://github.com/facebookresearch/detectron2), you can either install it yourself, or use:
 ```Bash

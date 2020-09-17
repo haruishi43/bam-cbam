@@ -3,6 +3,8 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
+from fvcore.nn import weight_init
+
 from .utils import Flatten
 
 __all__ = ["BAM"]
@@ -51,6 +53,9 @@ class ChannelGate(nn.Module):
         self.gate_c.add_module(
             "gate_c_fc_final", nn.Linear(gate_channels[-2], gate_channels[-1])
         )
+        for m in self.modules():
+            if type(m) == nn.Linear:
+                weight_init.c2_msra_fill(m)
 
     def forward(self, in_tensor):
         avg_pool = F.avg_pool2d(
@@ -105,6 +110,10 @@ class SpatialGate(nn.Module):
             "gate_s_conv_final",
             nn.Conv2d(gate_channel // reduction_ratio, 1, kernel_size=1),
         )
+
+        for m in self.modules():
+            if type(m) == nn.Conv2d:
+                weight_init.c2_msra_fill(m)
 
     def forward(self, in_tensor):
         return self.gate_s(in_tensor).expand_as(in_tensor)
