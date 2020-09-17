@@ -38,5 +38,6 @@ python classification/train_imagenet.py --data <path/to/dataset/root> --prefix i
 ```
 
 - See other arguments inside the `parse_args()` function @ [`train_imagenetpy`](classification/train_imagenet.py).
+- Download ImageNet from the [official website](http://www.image-net.org/challenges/LSVRC/2012/downloads) and use this [script](https://gist.github.com/haruishi43/dc96e069ba4d32104ed9b1761f55c2ee) to orgaize it.
 
 ## Detection

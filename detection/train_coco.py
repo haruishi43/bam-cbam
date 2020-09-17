@@ -46,12 +46,16 @@ def get_evaluator(cfg, dataset_name, output_folder=None):
     evaluator_list = []
     evaluator_type = MetadataCatalog.get(dataset_name).evaluator_type
     if evaluator_type in ["coco"]:
-        evaluator_list.append(COCOEvaluator(dataset_name, cfg, True, output_folder))
+        evaluator_list.append(
+            COCOEvaluator(dataset_name, cfg, True, output_folder)
+        )
     if evaluator_type == "pascal_voc":
         return PascalVOCDetectionEvaluator(dataset_name)
     if len(evaluator_list) == 0:
         raise NotImplementedError(
-            "no Evaluator for the dataset {} with the type {}".format(dataset_name, evaluator_type)
+            "no Evaluator for the dataset {} with the type {}".format(
+                dataset_name, evaluator_type
+            )
         )
     if len(evaluator_list) == 1:
         return evaluator_list[0]
@@ -63,12 +67,16 @@ def do_test(cfg, model):
     for dataset_name in cfg.DATASETS.TEST:
         data_loader = build_detection_test_loader(cfg, dataset_name)
         evaluator = get_evaluator(
-            cfg, dataset_name, os.path.join(cfg.OUTPUT_DIR, "inference", dataset_name)
+            cfg,
+            dataset_name,
+            os.path.join(cfg.OUTPUT_DIR, "inference", dataset_name),
         )
         results_i = inference_on_dataset(model, data_loader, evaluator)
         results[dataset_name] = results_i
         if comm.is_main_process():
-            logger.info("Evaluation results for {} in csv format:".format(dataset_name))
+            logger.info(
+                "Evaluation results for {} in csv format:".format(dataset_name)
+            )
             print_csv_format(results_i)
     if len(results) == 1:
         results = list(results.values())[0]
@@ -84,7 +92,10 @@ def do_train(cfg, model, resume=False):
         model, cfg.OUTPUT_DIR, optimizer=optimizer, scheduler=scheduler
     )
     start_iter = (
-        checkpointer.resume_or_load(cfg.MODEL.WEIGHTS, resume=resume).get("iteration", -1) + 1
+        checkpointer.resume_or_load(cfg.MODEL.WEIGHTS, resume=resume).get(
+            "iteration", -1
+        )
+        + 1
     )
     max_iter = cfg.SOLVER.MAX_ITER
 
@@ -115,15 +126,21 @@ def do_train(cfg, model, resume=False):
             losses = sum(loss_dict.values())
             assert torch.isfinite(losses).all(), loss_dict
 
-            loss_dict_reduced = {k: v.item() for k, v in comm.reduce_dict(loss_dict).items()}
+            loss_dict_reduced = {
+                k: v.item() for k, v in comm.reduce_dict(loss_dict).items()
+            }
             losses_reduced = sum(loss for loss in loss_dict_reduced.values())
             if comm.is_main_process():
-                storage.put_scalars(total_loss=losses_reduced, **loss_dict_reduced)
+                storage.put_scalars(
+                    total_loss=losses_reduced, **loss_dict_reduced
+                )
 
             optimizer.zero_grad()
             losses.backward()
             optimizer.step()
-            storage.put_scalar("lr", optimizer.param_groups[0]["lr"], smoothing_hint=False)
+            storage.put_scalar(
+                "lr", optimizer.param_groups[0]["lr"], smoothing_hint=False
+            )
             scheduler.step()
 
             if (
@@ -135,7 +152,9 @@ def do_train(cfg, model, resume=False):
                 # Compared to "train_net.py", the test results are not dumped to EventStorage
                 comm.synchronize()
 
-            if iteration - start_iter > 5 and (iteration % 20 == 0 or iteration == max_iter):
+            if iteration - start_iter > 5 and (
+                iteration % 20 == 0 or iteration == max_iter
+            ):
                 for writer in writers:
                     writer.write()
             periodic_checkpointer.step(iteration)
