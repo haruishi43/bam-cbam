@@ -1,0 +1,6 @@
+_BASE_: "../Base-RCNN-CBAM.yaml"
+MODEL:
+  WEIGHTS: ""
+  MASK_ON: False
+  RESNETS:
+    DEPTH: 50

@@ -1,6 +1,7 @@
 # dataset
 /data
 /checkpoints
+/output
 
 # dev
 .vscode

@@ -32,6 +32,10 @@ from detectron2.utils.events import (
     TensorboardXWriter,
 )
 
+# fmt: off
+from cbam.detectors import *
+# fmt: on
+
 logger = logging.getLogger("detectron2")
 
 
