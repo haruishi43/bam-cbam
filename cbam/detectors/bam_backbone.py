@@ -15,14 +15,7 @@ from ..modules.bam import BAM
 
 
 class BAMBlock(CNNBlockBase):
-    def __init__(
-        self,
-        in_channels,
-        out_channels,
-        *,
-        stride=1,
-        **kwargs
-    ):
+    def __init__(self, in_channels, out_channels, *, stride=1, **kwargs):
         super().__init__(in_channels, out_channels, stride)
         self.bam = BAM(out_channels)
 
