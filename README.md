@@ -42,3 +42,25 @@ python classification/train_imagenet.py --data <path/to/dataset/root> --prefix i
 - Download ImageNet from the [official website](http://www.image-net.org/challenges/LSVRC/2012/downloads) and use this [script](https://gist.github.com/haruishi43/dc96e069ba4d32104ed9b1761f55c2ee) to orgaize it.
 
 ## Detection
+
+### COCO
+
+Orgaize COCO dataset ([see detectron2's guide for more information](https://github.com/facebookresearch/detectron2/blob/master/datasets/README.md)).
+
+```Bash
+export DETECTRON2_DATASETS=/path/to/datasets  # else detectron2 will use ./datasets
+```
+
+```Bash
+python detection/train_coco.py --num-gpus 8 \
+  --config-file detection/configs/COCO-Detection/faster_rcnn_R_50_CBAM_1x.yaml
+```
+
+The original configuration are for using 8 gpus, you might need to change parameters for single gpu:
+```Bash
+CUDA_VISIBLE_DEVICES=0, python detection/train_coco.py --ngpu 1 \
+  --config-file detection/configs/COCO-Detection/faster_rcnn_R_50_CBAM_1x.yaml \
+  SOLVER.IMS_PER_BATCH 2 SOLVER.BASE_LR 0.0025
+```
+
+### Pascal VOC
